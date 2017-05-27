@@ -21,7 +21,90 @@ void genTableValues(){
 
 }
 
+int encoderChoice(int i){
+	if(!i){
+		return 0; 	
+	}else return 1;
 
+}
+void encoder(){
+
+	int i,j,esc;
+	int *output;
+	int state = 0;
+	
+	output = (int *)malloc(sizeof(int)*((tam+2)*2));
+	//Coloca dois zeros's na final da entrada
+	for(i = tam;i < tam+2;i++)
+		input[i] = 0;
+		
+	tam+=2;
+	j = 0;
+	for(i = 0; i < (tam*2);i+=2){
+		if(!state){
+			esc = encoderChoice(input[j]);
+			if(esc == 0){
+				output[i] = output[i+1] = 0;			
+				state= 0;
+			}
+			else{
+				output[i] = output[i+1] = 1;
+				state = 2;		
+			}
+			j++;			
+		}
+		else if(state == 1){
+			esc = encoderChoice(input[j]);		
+			if(esc == 0){
+				output[i] = output[i+1] = 1;			
+				state = 0;
+			}
+			else{
+				output[i] = output[i+1] = 0	;		
+				state = 2;			
+			}
+			j++;
+		}
+		else if(state == 2){
+			esc = encoderChoice(input[j]);
+			if(esc == 0){
+				output[i] = 1;
+				output[i+1] = 0;			
+				state = 1;
+			}
+			else{
+				output[i] = 0;			
+				output[i+1] = 1;
+				state = 3;
+			}
+			j++;		
+		}
+		else{
+			esc = encoderChoice(input[j]);
+			if(esc == 0){
+				output[i] = 0;
+				output[i+1] = 1;			
+				state = 1;
+			}
+			else{
+				output[i] = 1;
+				output[i+1] = 0;
+				state = 3;			
+			
+			}
+			j++;
+		}	
+	
+	}
+	for(i = 0; i < (tam*2);i+=2){
+		printf("%d%d ", output[i],output[i+1]);	
+	
+	}
+	
+	
+	return;
+
+}
 int main(){
 	int i = 0;
 	
@@ -30,10 +113,11 @@ int main(){
 	scanf("%d", &tam);
 	
 	//le entrada
-	input = (int *)malloc(sizeof(int)*tam);
+	input = (int *)malloc(sizeof(int)*(tam+2));
 	while(i < tam){	
 		scanf("%d", &input[i++]);
 	}
+	encoder();
 	//for(i = 0; i < tam;i++)
 	//	printf("%d ", input[i]);
 	//for(i = 0; i < 8;i+=2){
