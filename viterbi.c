@@ -110,6 +110,7 @@ void encoder(){
 	return;
 
 }
+
 decoder_t  *fillData(int state, int val){
 //	puts("dmmjmj");
 	decoder_t *new = (decoder_t *)malloc(sizeof(decoder_t));
@@ -253,7 +254,9 @@ void decoder(){
 	//}/
 	return;
 }
-int main(){
+
+int main(int argc, char* argv[]){
+
 	int i = 0;
 	//printf("fwfjjrh");
 	//genTableValues();
@@ -275,4 +278,7 @@ int main(){
 	//}
 	
 	return 0;
+	
+	
+}
 }
