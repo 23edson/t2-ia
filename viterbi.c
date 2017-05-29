@@ -32,7 +32,7 @@ int encoderChoice(int i){
 	}else return 1;
 
 }
-void encoder(){
+int *encoder(){
 
 	int i,j,esc;
 	int *output;
@@ -107,7 +107,7 @@ void encoder(){
 	}
 	
 	
-	return;
+	return output;
 
 }
 
@@ -239,28 +239,67 @@ void initStructs(){
 
 
 }
-void decoder(){
+int getState(int *vet,int pos){
 
-	int i;
+	if(!vet[pos] && !vet[pos+1]){
+		return 0;
+	}
+	else if(!vet[pos] && vet[pos+1]){
+		return 1;
+	}
+	else if(vet[pos] && !vet[pos]){
+		return 2;	
+	}
+	else{
+		return 3;
+	}
+
+}
+int getDiffError(int a, int b){
+
+	int c;
+	if(a==b)return 0;
+	
+	c = (a^b);
+	if(c == 1)return c;
+	else return (c-1);
+
+}
+void decoder(int *output){
+
+	int i,j;
 	tam = 2;
 	tbb = (tab_t *)malloc(sizeof(tab_t)*(tam/2));
 	initStructs();
 	fillMatrix();
 	
-	//for(i = 0; i < 8;i++){
-	//	printf("%d %d %d %d \n",tbb[0].dec[i]->init,tbb[0].dec[i]->ent,tbb[0].dec[i]->emit,
-	//	tbb[0].dec[i]->last);	
+
+	//Inicializa a decodificacao assumindo estado 00
+	for(j = 0; j < 2;j++){
+		tbb[0].dec[j]->recv = getState(output,0);
+		tbb[0].dec[j]->erro = getDiffError(tbb[0].dec[j]->emit,tbb[0].dec[j]->recv); 
+	}	
+	tbb[0].qtd+=2;
+	//marca estado 00 como ativo
+	tbb[0].atv[0]=1;
 	
-	//}/
+	//for(i = 0; i < tam*2;i+=2){
+		
+	
+	
+	
+	//}
+	
 	return;
 }
 
 int main(int argc, char* argv[]){
 
 	int i = 0;
+	int *output = NULL;
 	//printf("fwfjjrh");
 	//genTableValues();
-	decoder();	
+	decoder(output);	
 	//lê tamanho da entrada
 	scanf("%d", &tam);
 	
@@ -269,7 +308,7 @@ int main(int argc, char* argv[]){
 	while(i < tam){	
 		scanf("%d", &input[i++]);
 	}
-	encoder();
+	output = encoder();
 	//for(i = 0; i < tam;i++)
 	//	printf("%d ", input[i]);
 	//for(i = 0; i < 8;i+=2){
