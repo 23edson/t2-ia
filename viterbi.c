@@ -265,10 +265,62 @@ int getDiffError(int a, int b){
 	else return (c-1);
 
 }
+int count(tab_t *tl, int state){
+
+	int i,idx;
+	int menor = 999;
+	for(i = 0;i<8;i++){
+		if(tl.dec[i]->last == state && tl.dec[i]->erro < menor){
+			menor = tl.dec[i]->erro;
+			idx = i;		
+		}
+	
+	}
+	return idx;
+}
+int *ativa(int state,tab_t *tl){
+	int v = (int *)malloc(sizeof(int)*2);
+	if(state == 0){
+		v[0] = tl.dec[0]->last;
+		v[1] = tl.dec[1]->last;	
+	}
+	else if(state == 1){
+		v[0] = tl.dec[2]->last;
+		v[1] = tl.dec[3]->last;	
+	}
+	else if(state == 2){
+		v[0] = tl.dec[4]->last;
+		v[1] = tl.dec[5]->last;	
+	
+	}
+	else if(state == 3){
+		v[0] = tl.dec[6]->last;
+		v[1] = tl.dec[7]->last;	
+	
+	}
+	return v;
+}
+
+int find(tab_t *tt,int state,int v[4]){
+
+	int i;
+	for(i =0 ;i < 4; i++){
+		if(v[i] == 1){
+			if(tt->dec[i].last == state)
+				return i;		
+		
+		}
+	
+	
+	}
+
+}
 void decoder(int *output){
 
-	int i,j;
+	int i,j,k;
+	int flag[4] = {0,0,0,0};
 	tam = 2;
+	int current = 0;
 	tbb = (tab_t *)malloc(sizeof(tab_t)*(tam/2));
 	initStructs();
 	fillMatrix();
@@ -282,7 +334,53 @@ void decoder(int *output){
 	tbb[0].qtd+=2;
 	//marca estado 00 como ativo
 	tbb[0].atv[0]=1;
+	//current++;
+	//marca estado seguinte
+	for(j = 0; j < 2; j ++){
+		tbb[1].dec[j]->recv = getState(output,2);	
+		tbb[1].dec[j]->erro = getDiffError(tbb[0].dec[0]->erro,tbb[1].dec[j]->recv);
+	}
+	for(j =4 ; j < 6;j++){
+		tbb[1].dec[j]->recv = getState(output,2);	
+		tbb[1].dec[j]->erro = getDiffError(tbb[0].dec[1]->erro,tbb[1].dec[j]->recv);
+	}	
+	tbb[1].atv[0] = 1;
+	tbb[1].atv[2] = 1;
+	//current+=2;
 	
+	for(j = 0; j < 8;j++){
+		tbb[2].dec[j]->recv = getState(output,4);
+		int d = find(&tbb[2],tbb[2].dec[j]->init,tbb[1].atv);	
+		tbb[2].dec[j]->erro = getDiffError(tbb[1].dec[d]->erro,tbb[2].dec[j]->recv);
+	
+	}
+	for(k = 0; k < 4;k++)tbb[2].atv[k]=1;
+	current+=3;
+	
+	for(j = 6; j < tam*2;j+=2){
+		for(k = 0; k < 4;k++){
+			if(tbb[current-1].atv[k] == 1){
+				int *v=ativa(&tbb[current]);
+				tbb[current].atv[v[0]]= flag[v[0]] =1;
+				tbb[current].atv[v[1]]=flag[v[0]] =1;
+				tbb[current].atv[k] = 1;			
+			}
+			else if(flag[k] == 0){
+					tbb[current].atv[k] = tbb[current-1].atv[k];		
+			}
+		}
+		for(k =0; k < 4;k++){
+			if(tbb[current].atv[k] == 1){
+				int minor = count(&tbb[current-1],k);			
+						
+			
+			
+			}			
+		
+		}
+	   
+	
+	}
 	//for(i = 0; i < tam*2;i+=2){
 		
 	
