@@ -105,7 +105,7 @@ int *encoder(){
 		printf("%d%d ", output[i],output[i+1]);	
 	
 	}
-	
+	tam = tam*2;
 	
 	return output;
 
@@ -214,17 +214,19 @@ void fillMatrix(){
 	int i,j;
 	int st = 0;
 	
-	//printf("%d", tam/2);
+	//printf("T:%d\n", tam/2);
 	//puts("oigeerg");
 	for(i = 0; i < (tam/2);i++){//puts("12");
+		st = 0;
 		for(j = 0; j < 8;j++){
 			
 			if(j>0 && j%2==0)st+=1;
 			//puts("popop");
 			tbb[i].dec[j] = fillData(st,j%2);
-			//printf("%d %d %d %d\n", tbb[i].dec[j]->init,tbb[i].dec[j]->ent,tbb[i].dec[j]->emit,tbb[i].dec[j]->last);
+		//	printf("%d %d %d  %d\n", tbb[i].dec[j]->init,tbb[i].dec[j]->ent,tbb[i].dec[j]->emit,tbb[i].dec[j]->last);
 		//	puts("th");
 		}
+	//	printf("\n");
 	}
 
 }
@@ -240,14 +242,14 @@ void initStructs(){
 
 }
 int getState(int *vet,int pos){
-
+	//printf("%d %d ", pos,vet[pos+1]);
 	if(!vet[pos] && !vet[pos+1]){
 		return 0;
 	}
 	else if(!vet[pos] && vet[pos+1]){
 		return 1;
 	}
-	else if(vet[pos] && !vet[pos]){
+	else if(vet[pos] && !vet[pos+1]){
 		return 2;	
 	}
 	else{
@@ -270,8 +272,8 @@ int count(tab_t *tl, int state){
 	int i,idx;
 	int menor = 999;
 	for(i = 0;i<8;i++){
-		if(tl.dec[i]->last == state && tl.dec[i]->erro < menor){
-			menor = tl.dec[i]->erro;
+		if(tl->dec[i]->last == state && tl->dec[i]->erro < menor){
+			menor = tl->dec[i]->erro;
 			idx = i;		
 		}
 	
@@ -279,39 +281,64 @@ int count(tab_t *tl, int state){
 	return idx;
 }
 int *ativa(int state,tab_t *tl){
-	int v = (int *)malloc(sizeof(int)*2);
+	int *v = (int *)malloc(sizeof(int)*2);
 	if(state == 0){
-		v[0] = tl.dec[0]->last;
-		v[1] = tl.dec[1]->last;	
+		v[0] = tl->dec[0]->last;
+		v[1] = tl->dec[1]->last;	
 	}
 	else if(state == 1){
-		v[0] = tl.dec[2]->last;
-		v[1] = tl.dec[3]->last;	
+		v[0] = tl->dec[2]->last;
+		v[1] = tl->dec[3]->last;	
 	}
 	else if(state == 2){
-		v[0] = tl.dec[4]->last;
-		v[1] = tl.dec[5]->last;	
+		v[0] = tl->dec[4]->last;
+		v[1] = tl->dec[5]->last;	
 	
 	}
 	else if(state == 3){
-		v[0] = tl.dec[6]->last;
-		v[1] = tl.dec[7]->last;	
+		v[0] = tl->dec[6]->last;
+		v[1] = tl->dec[7]->last;	
 	
 	}
 	return v;
 }
+void debugDecoder(){
 
-int find(tab_t *tt,int state,int v[4]){
 
-	int i;
+	int size = tam/2;
+	int i,j,k;
+	
+	for(i = 0; i < size;i++){
+		printf("Init Ent Emit Recv Last Error\n");
+		for(j = 0; j < 4; j++){
+			for(k = 0; k < 2;k++){
+				if(tbb[i].atv[j] == 1){
+					printf("  %d   %d    %d    %d    %d    %d\n",tbb[i].dec[2*j+k]->init,
+							 tbb[i].dec[2*j+k]->ent,tbb[i].dec[2*j+k]->emit,
+							 tbb[i].dec[2*j+k]->recv,tbb[i].dec[2*j+k]->last,
+							 tbb[i].dec[2*j+k]->erro);			
+				}
+			
+			}		
+		}	
+	}
+
+
+
+}
+int find(tab_t *tt,int state){
+
+	int i,k;
+	
+	
 	for(i =0 ;i < 4; i++){
-		if(v[i] == 1){
-			if(tt->dec[i].last == state)
-				return i;		
+		if(tt->atv[i] == 1){
+			for(k = 0; k < 2;k++){
+				if(tt->dec[(2*i)+k]->last == state)
+					return (2*i)+k;
+			}		
 		
 		}
-	
-	
 	}
 
 }
@@ -319,10 +346,11 @@ void decoder(int *output){
 
 	int i,j,k;
 	int flag[4] = {0,0,0,0};
-	tam = 2;
+	//tam = 2;
 	int current = 0;
 	tbb = (tab_t *)malloc(sizeof(tab_t)*(tam/2));
 	initStructs();
+//	printf("\nttttt: %d", tam/2);
 	fillMatrix();
 	
 
@@ -334,31 +362,49 @@ void decoder(int *output){
 	tbb[0].qtd+=2;
 	//marca estado 00 como ativo
 	tbb[0].atv[0]=1;
+	//printf("\n");
+	//for(j =0 ; j < 2;j++){
+	//	printf("%d %d %d %d %d %d \n", tbb[0].dec[j]->init,tbb[0].dec[j]->ent,tbb[0].dec[j]->emit,tbb[0].dec[j]->recv,tbb[0].dec[j]->last,tbb[0].dec[j]->erro);	
+	
+	//}
+	
+	
 	//current++;
 	//marca estado seguinte
 	for(j = 0; j < 2; j ++){
 		tbb[1].dec[j]->recv = getState(output,2);	
-		tbb[1].dec[j]->erro = getDiffError(tbb[0].dec[0]->erro,tbb[1].dec[j]->recv);
+		tbb[1].dec[j]->erro = tbb[0].dec[0]->erro + getDiffError(tbb[0].dec[j]->emit,tbb[1].dec[j]->recv);
 	}
 	for(j =4 ; j < 6;j++){
 		tbb[1].dec[j]->recv = getState(output,2);	
-		tbb[1].dec[j]->erro = getDiffError(tbb[0].dec[1]->erro,tbb[1].dec[j]->recv);
+		tbb[1].dec[j]->erro = tbb[0].dec[1]->erro + getDiffError(tbb[1].dec[j]->emit,tbb[1].dec[j]->recv);
 	}	
 	tbb[1].atv[0] = 1;
 	tbb[1].atv[2] = 1;
 	//current+=2;
-	
+	//printf("\n");
 	for(j = 0; j < 8;j++){
+		
 		tbb[2].dec[j]->recv = getState(output,4);
-		int d = find(&tbb[2],tbb[2].dec[j]->init,tbb[1].atv);	
-		tbb[2].dec[j]->erro = getDiffError(tbb[1].dec[d]->erro,tbb[2].dec[j]->recv);
+		int d = find(&tbb[1],tbb[2].dec[j]->init);	
+		tbb[2].dec[j]->erro = tbb[1].dec[d]->erro + getDiffError(tbb[2].dec[j]->emit,tbb[2].dec[j]->recv);
+		//printf("%d %d\n",getDiffError(tbb[2].dec[j]->emit,tbb[2].dec[j]->recv),d);
 	
 	}
+	printf("\n");
+	
+	
 	for(k = 0; k < 4;k++)tbb[2].atv[k]=1;
 	current+=3;
 	
-	for(j = 6; j < tam*2;j+=2){
-		for(k = 0; k < 4;k++){
+	
+	
+	
+	
+	
+	
+	for(j = 6; j < tam;j+=2){
+		/*for(k = 0; k < 4;k++){
 			if(tbb[current-1].atv[k] == 1){
 				int *v=ativa(&tbb[current]);
 				tbb[current].atv[v[0]]= flag[v[0]] =1;
@@ -368,21 +414,26 @@ void decoder(int *output){
 			else if(flag[k] == 0){
 					tbb[current].atv[k] = tbb[current-1].atv[k];		
 			}
-		}
+		}*/
+		//for(k = 0; k < 4; k++)
+		
 		for(k =0; k < 4;k++){
-			if(tbb[current].atv[k] == 1){
+			if(tbb[current-1].atv[k] == 1){
+				tbb[current].atv[k] = tbb[current-1].atv[k];
 				int minor = count(&tbb[current-1],k);			
 						
-			
-			
+				tbb[current].dec[2*k]->recv = tbb[current].dec[(2*k)+1]->recv = getState(output,j);
+				tbb[current].dec[2*k]->erro = tbb[current-1].dec[minor]->erro+ getDiffError(tbb[current].dec[2*k]->emit,tbb[current].dec[2*k]->recv);
+				tbb[current].dec[(2*k)+1]->erro = tbb[current-1].dec[minor]->erro+ getDiffError(tbb[current].dec[(2*k)+1]->emit,tbb[current].dec[(2*k)+1]->recv);
+					
 			}			
-		
+			
 		}
-	   
+	   current++;
 	
 	}
-	//for(i = 0; i < tam*2;i+=2){
-		
+	
+	debugDecoder();	
 	
 	
 	
@@ -397,7 +448,7 @@ int main(int argc, char* argv[]){
 	int *output = NULL;
 	//printf("fwfjjrh");
 	//genTableValues();
-	decoder(output);	
+		
 	//lê tamanho da entrada
 	scanf("%d", &tam);
 	
@@ -407,6 +458,7 @@ int main(int argc, char* argv[]){
 		scanf("%d", &input[i++]);
 	}
 	output = encoder();
+	decoder(output);
 	//for(i = 0; i < tam;i++)
 	//	printf("%d ", input[i]);
 	//for(i = 0; i < 8;i+=2){
@@ -417,5 +469,4 @@ int main(int argc, char* argv[]){
 	return 0;
 	
 	
-}
 }
