@@ -42,7 +42,9 @@ int *encoder(){
 	//Coloca dois zeros's na final da entrada
 	for(i = tam;i < tam+2;i++)
 		input[i] = 0;
-		
+	
+	//input[tam-1] = 1;
+	//input[tam-2] = 1;	
 	tam+=2;
 	j = 0;
 	for(i = 0; i < (tam*2);i+=2){
@@ -342,6 +344,52 @@ int find(tab_t *tt,int state){
 	}
 
 }
+
+int *emitOriginal(int *path){
+
+	int size = tam/2;
+	int i;
+	int *original = (int *)malloc(sizeof(int)*(tam/2));
+	for(i = 0; i < size;i++){
+		original[i] = tbb[i].dec[path[i]]->ent;
+			
+	}
+	return original;
+
+}
+void inversePath(){
+
+	int size = tam/2;
+	int i,val;
+	int j = size-1;
+	int atual = 0;
+	//printf("%d", j);
+	int *path = (int *)malloc(sizeof(int)*size);
+	for(i = 0 ;i < 4;i++){
+		val = count(&tbb[size-1],i);	
+		if(tbb[size-1].dec[val]->erro < tbb[size-1].dec[atual]->erro)
+			atual = val;
+	}
+	//printf("%d", atual);
+	size-=2;
+	path[j--] = atual;
+	for(;size >= 0; size--){
+		val = count(&tbb[size],tbb[size+1].dec[path[j+1]]->init);
+		path[j--] = val;
+			
+	}
+	
+	int *original = emitOriginal(path);
+	printf("Original\n");
+	for(i = 0; i < (tam/2)-2;i++)
+		printf("%d ", original[i]);
+//	printf("\n");
+	//for(i = 0; i < (tam/2);i++)
+	//	printf("%d ", path[i]);
+  
+}
+
+
 void decoder(int *output){
 
 	int i,j,k;
@@ -434,7 +482,7 @@ void decoder(int *output){
 	}
 	
 	debugDecoder();	
-	
+	inversePath();
 	
 	
 	//}
