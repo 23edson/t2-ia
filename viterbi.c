@@ -506,7 +506,12 @@ int main(int argc, char* argv[]){
 		scanf("%d", &input[i++]);
 	}
 	output = encoder();
-	decoder(output);
+	
+	//modifica a codificacao manualmente para testar
+	int vt[64] = {1,1,1,0,1,1,1,1,1,0,0,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,0,0,1,1,0,1,0,1,1,1,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,1,1,1};
+	//for(
+	//decoder(output);
+	decoder(vt);
 	//for(i = 0; i < tam;i++)
 	//	printf("%d ", input[i]);
 	//for(i = 0; i < 8;i+=2){
