@@ -1,3 +1,27 @@
+/**
+*   Universidade Federal da Fronteira Sul
+*
+*   TRABALHO II
+*   Disciplina: Inteligência Artificial
+*   Professor: José Carlos Bins Filho
+*
+*
+* 	 Alunos : Edson Lemes da Silva & Lucas Cezar Parnoff
+*  
+*   
+*  O trabalho consiste em fazer codificação e decodificação de
+*  uma sequência de bits dado como entrada. A codificação é feita
+*  através da tabela de transições definida na descrição do trabalho.
+*  Adicionando um ruído a partir da entrada codificada, com o uso do
+*  algoritmo de Viterbi, é feito a decodificação levando em conta a tabela
+*  de transições. O objetivo é recuperar a entrada original, mesmo que haja
+*  divergência em alguns bits da codificação.
+*
+*
+*
+**/
+
+
 #include "viterbi.h"
 
 //table_t *tbl = NULL;
@@ -12,19 +36,13 @@
 //int *v2 = (int[8]){00,10,00,10,01,11,01,11};	//val proximo
 
 
-int v[8] = {0,3,3,0,2,1,1,2}; //val emitido
-int v2[8] = {0,2,0,2,1,3,1,3};
+//transições
+int v[8] = {0,3,3,0,2,1,1,2}; //Valores emitidos 
+int v2[8] = {0,2,0,2,1,3,1,3}; //Próximo estado
 
 tab_t *tbb = NULL;
 int maxSize;
-/*void genTableValues(){
-
-	tbl = (table_t *)malloc(sizeof(table_t));
-	
-	tbl->valEmit = v;
-	tbl->valProx = v2;
-
-}*/
+int *output;
 
 int encoderChoice(int i){
 	if(!i){
@@ -32,68 +50,93 @@ int encoderChoice(int i){
 	}else return 1;
 
 }
+
+/**
+ * @function encoder
+ *
+ *
+ * A função é responsável por fazer a codificação dado uma entrada.
+ * A codificação possui o dobro mais dois em relação ao tamanho da
+ * sequência original. Deste modo, para cada bit é gerado dois de acordo
+ * com as definições na tabela de transição; isto levando em conta também
+ * que é adicionado dois pares de zeros's no final, para permitir que seja
+ * usado a influência de todos os bits da entrada.	   	 
+ * Este processo ocorre levando em conta que o estado inicial é o 00. 
+ *
+ **/ 
 int *encoder(){
 
 	int i,j,esc;
-	int *output;
+	
 	int state = 0;
 	
 	output = (int *)malloc(sizeof(int)*((tam+2)*2));
-	//Coloca dois zeros's na final da entrada
+	
+	//Coloca dois zeros's no final da entrada
 	for(i = tam;i < tam+2;i++)
 		input[i] = 0;
 	
-	//input[tam-1] = 1;
-	//input[tam-2] = 1;	
 	tam+=2;
 	j = 0;
 	for(i = 0; i < (tam*2);i+=2){
+		//se esta no estado 0
 		if(!state){
-			esc = encoderChoice(input[j]);
+			esc = input[j];
 			if(esc == 0){
+				//Emite 00; prox. estado : 0
 				output[i] = output[i+1] = 0;			
 				state= 0;
 			}
 			else{
+				//Emite 11; prox. estado : 2
 				output[i] = output[i+1] = 1;
 				state = 2;		
 			}
 			j++;			
 		}
+		//se esta no estado 1
 		else if(state == 1){
-			esc = encoderChoice(input[j]);		
+			esc = input[j];		
 			if(esc == 0){
+				//Emite 11; prox. estado : 0
 				output[i] = output[i+1] = 1;			
 				state = 0;
 			}
 			else{
-				output[i] = output[i+1] = 0	;		
+				//Emite 00; prox. estado : 2
+				output[i] = output[i+1] = 0;		
 				state = 2;			
 			}
 			j++;
 		}
+		//se esta no estado 2
 		else if(state == 2){
-			esc = encoderChoice(input[j]);
+			esc = input[j];
 			if(esc == 0){
+				//Emite 10; prox. estado : 1
 				output[i] = 1;
 				output[i+1] = 0;			
 				state = 1;
 			}
 			else{
+				//Emite 01; prox. estado : 3
 				output[i] = 0;			
 				output[i+1] = 1;
 				state = 3;
 			}
 			j++;		
 		}
+		//se esta no estado 3
 		else{
-			esc = encoderChoice(input[j]);
+			esc = input[j];
 			if(esc == 0){
+				//Emite 01; prox. estado : 1
 				output[i] = 0;
 				output[i+1] = 1;			
 				state = 1;
 			}
 			else{
+				//Emite 10; prox. estado : 3
 				output[i] = 1;
 				output[i+1] = 0;
 				state = 3;			
@@ -103,16 +146,24 @@ int *encoder(){
 		}	
 	
 	}
-	for(i = 0; i < (tam*2);i+=2){
-		printf("%d%d ", output[i],output[i+1]);	
-	
-	}
 	tam = tam*2;
 	
 	return output;
 
 }
 
+/**
+ * @function fillData
+ *
+ * @param int state - Número do estado corrente
+ * @param int val - Posicao no vetor v/v2
+ *
+ * A função preenche a struct decoder_t *new com os valores da tabela de
+ * transição. Estes valores são usados posteriormente para calcular os erros
+ * de cada estado da decodificação.
+ * Após preechimento a struct é retornada.
+ * 
+ **/ 
 decoder_t  *fillData(int state, int val){
 //	puts("dmmjmj");
 	decoder_t *new = (decoder_t *)malloc(sizeof(decoder_t));
@@ -145,72 +196,16 @@ decoder_t  *fillData(int state, int val){
 	
 	
 	return new;
-	/*if(state == 0){
-		new->init = 0;
-		if(val == 0){
-			
-			new->ent = 0;
-			new->emit = 0;
-			new->last = 00;		
-		}
-		else{
-			
-			new->ent = 1;
-			new->emit = 3;
-			new->last = 2;		
-		
-		}	
-	}
-	else if(state == 1){
-		new->init = 1;
-		if(val == 0){
-			new->ent = 0;
-			new->emit = 3;
-			new->last = 0;		
-		}
-		else{
-			new->ent = 1;
-			new->emit = 0;
-			new->last = 2;
-		
-		}
-	}
-	else if(state == 2){
-		new->init=2;	
-		if(val == 0){
-			new->ent = 0;
-			new->emit = 2;
-			new->last = 1;		
-		}
-		else{
-			new->ent=1;
-			new->emit = 1;
-			new->last = 3;		
-		
-		}
-	}
-	else{
-		new->init=3;
-		if(val == 0){
-			new->ent = 0;
-			new->emit=1;
-			new->last = 1;
-		}	
-		else{
-			new->ent =1;
-			new->emit = 2;		
-			new->last = 3;
-		}
-	
-	
-	
-	}	*/
-	
-	
-	
-	
-	}
+}
 
+/**
+ * @function fillMatrix
+ *
+ *  Preenche o vetor de structs com os valores da tabela
+ *  de transição. O tamanho de estados de decodificação é
+ *  metade do tamanho da entrada.
+ * 
+ **/ 
 
 void fillMatrix(){
 	int i,j;
@@ -232,6 +227,14 @@ void fillMatrix(){
 	}
 
 }
+
+/**
+ * @function initStructs
+ *
+ * A função inicializa os parâmetros da struct tab_t tbb (global). A
+ * quantidade de estados é a metade da entrada codificada.
+ * 
+ **/ 
 void initStructs(){
 	int i,j;
 	for(i = 0;i < (tam/2);i++){
@@ -243,6 +246,19 @@ void initStructs(){
 
 
 }
+
+/**
+ * @function getState
+ *
+ * @param int vet - Recebe o vetor codificado.
+ * @param int pos - posição no vetor
+ * @param int horario - Horário para o teste.
+ *
+ * Verifica dentro do vetor vet a pos e pos+1 para reconhecer
+ * dois bits como entrada.
+ * A função retorna o valor correspondente em decimal
+ * 
+ **/ 
 int getState(int *vet,int pos){
 	//printf("%d %d ", pos,vet[pos+1]);
 	if(!vet[pos] && !vet[pos+1]){
@@ -259,6 +275,18 @@ int getState(int *vet,int pos){
 	}
 
 }
+
+/**
+ * @function getDiffError
+ *
+ * @param int a
+ * @param int b
+ *
+ * A função compara os inteiro a e b, aplica xor bit-a-bit 
+ * para verificar a diferença de bits entre a e b.
+ * Retorna a quantidade de bits diferentes.
+ * 
+ **/ 
 int getDiffError(int a, int b){
 
 	int c;
@@ -269,6 +297,17 @@ int getDiffError(int a, int b){
 	else return (c-1);
 
 }
+
+/**
+ * @function count
+ *
+ * @param tab_t tl - Tabela de decodificação do estado corrente
+ * @param int state - número do estado a ser procurado
+ *
+ * Procura o menor erro em relação ao estado state passado como parâmetro.
+ * A função devolve o índice desse valor.
+ * 
+ **/ 
 int count(tab_t *tl, int state){
 
 	int i,idx;
@@ -282,6 +321,18 @@ int count(tab_t *tl, int state){
 	}
 	return idx;
 }
+
+/**
+ * @function ativa
+ *
+ * @param int state- Estado a ser analisado
+ * @param tab_t tl - Tabela de decodificação corrente
+ *
+ * A função procura qual estado corresponde ao anterior nos
+ * estados da tabela de decodificação. 
+ * É retornado os valores dos estados finais do estado anterior.
+ * 
+ **/ 
 int *ativa(int state,tab_t *tl){
 	int *v = (int *)malloc(sizeof(int)*2);
 	if(state == 0){
@@ -304,6 +355,33 @@ int *ativa(int state,tab_t *tl){
 	}
 	return v;
 }
+
+/**
+ * @function debugEncoder
+ *
+ * A função imprime na tela o resultado da codificação.
+ * 
+ **/ 
+void debugEncoder(){
+
+	int i;	
+	for(i = 0; i < (tam*2);i+=2){
+		printf("%d%d ", output[i],output[i+1]);	
+	
+	}
+
+
+}
+
+/**
+ * @function debugDecoder
+ *
+ * A tabela imprime na tela todos os estados 
+ * e as transições correspondente a cada um deles
+ * conforme a decodificação é processada. 
+ *
+ * 
+ **/ 
 void debugDecoder(){
 
 
@@ -328,6 +406,18 @@ void debugDecoder(){
 
 
 }
+
+/**
+ * @function find
+ *
+ * @param tab_t tt - Vetor de estados da decodificação
+ * @param int state - Estado a ser pesquisado
+ *
+ * A função procura o estado final correspondente ao início do
+ * estado seguinte.
+ * Deste modo, é retornado o índice desse estado.
+ * 
+ **/ 
 int find(tab_t *tt,int state){
 
 	int i,k;
@@ -345,6 +435,17 @@ int find(tab_t *tt,int state){
 
 }
 
+/**
+ * @function emitOriginal
+ *
+ * @param int path - Recebe um vetor contendo índices
+ *
+ * A função constrói um vetor com as emições originais
+ * de acordo com os índices passados no vetor path.
+ * No final, é retornado este vetor.s
+ * 
+ **/ 
+
 int *emitOriginal(int *path){
 
 	int size = tam/2;
@@ -357,6 +458,16 @@ int *emitOriginal(int *path){
 	return original;
 
 }
+
+/**
+ * @function inversePath
+ *
+ * A função analisa o vetor de decodificação de trás para frente,
+ * e reconstrói o caminho, colocando no vetor path os índices de
+ * cada estado com o menor erro, respeitando as transições indicadas.
+ * No final, é retornado um vetor contendo o caminho. 
+ * 
+ **/ 
 void inversePath(){
 
 	int size = tam/2;
@@ -389,7 +500,24 @@ void inversePath(){
   
 }
 
-
+/**
+ * @function decoder
+ *
+ * @param int output - recebe o vetor codificado (com ruído	)
+ *
+ * A função é responsável por gerenciar a decodificação da entrada.
+ * Inicia assumindo que está no estado 00. Constrói a tabela para 
+ * os primeiros 3 pares de bits. A partir daí controla a construção
+ * considerando que há mais de um estado final, neste caso usa-se o 
+ * estado que possui o menor erro entre o conjunto corrente.
+ *
+ * Aloca um vetor de struct tab_t da metade do tamanho da entrada.
+ * Assim cada posição é um estado da decodificação, ou seja, cada
+ * posição contém um vetor de decoder_t com oito posições.
+ * O índice 0 de tab_t tbb usa-se apenas 2 índices de decoder_t,
+ * índice 1 de tab_T usa 4 índices de decoder_t,
+ * os demais usam os oito índices. 
+ **/ 
 void decoder(int *output){
 
 	int i,j,k;
@@ -431,6 +559,7 @@ void decoder(int *output){
 	tbb[1].atv[2] = 1;
 	//current+=2;
 	//printf("\n");
+	//Completa os estados iniciais
 	for(j = 0; j < 8;j++){
 		
 		tbb[2].dec[j]->recv = getState(output,4);
@@ -439,7 +568,7 @@ void decoder(int *output){
 		//printf("%d %d\n",getDiffError(tbb[2].dec[j]->emit,tbb[2].dec[j]->recv),d);
 	
 	}
-	printf("\n");
+	
 	
 	
 	for(k = 0; k < 4;k++)tbb[2].atv[k]=1;
@@ -450,7 +579,7 @@ void decoder(int *output){
 	
 	
 	
-	
+	//Faz as outras transições até completar os estados de decodificação
 	for(j = 6; j < tam;j+=2){
 		/*for(k = 0; k < 4;k++){
 			if(tbb[current-1].atv[k] == 1){
@@ -489,7 +618,7 @@ void decoder(int *output){
 	
 	return;
 }
-
+//Função principal
 int main(int argc, char* argv[]){
 
 	int i = 0;
