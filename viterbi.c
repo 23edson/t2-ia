@@ -618,15 +618,46 @@ void decoder(int *output){
 	
 	return;
 }
+
+/**
+ * @function ruido
+ * 
+ * @param int alvo - recebe o vetor que será aplicado o ruido.
+ * @param int lvl  - indica o passo do ruido que será aplicado em cima do alvo.
+ *  
+ * Função que aplica um ruido uniforme para o alvo simulando os possíveis 
+ * erros de transmições, que podem ocorrer quando é passado pela rede.
+ * sendo '0' o mais alterado e 'tamanho * 2' o maximo, valores diferentes, seram
+ * considerados como 'tamanho * 2 - 3' para no minimo alterar dois valores.
+ * 
+ **/ 
+
+void ruido(int *alvo,int lvl){
+    int i, n;
+    time_t t;
+    n = (3 + lvl * 2) / 2;
+    srand((unsigned) time(&t));
+    if(n < 1 || n > tam)
+        n = tam - 3;
+    if(n%2 == 0)
+        n++;
+    for(i = 0 ; i < tam ; i += n ){
+        alvo[i] = (alvo[i] + rand() % 100 * n)%2;
+    };
+    return;
+}
+
 //Função principal
 int main(int argc, char* argv[]){
 
-	int i = 0;
+	int i = 0,lvl;
           tam = 0;
 	int *output = NULL;
 	//printf("fwfjjrh");
 	//genTableValues();
-		
+	if(argc > 1){
+            lvl = argv[1][0] - '0';
+        }
 	//lê tamanho da entrada
 	scanf("%d", &tam);
 	
@@ -637,22 +668,33 @@ int main(int argc, char* argv[]){
 	}
 	output = encoder();
         printf("\n");
-	//for(i=0;i < tam;i++) verificar output
-        //    printf(" %d",output[i]);
-        //printf("\n%d\n",tam); tamanho esta correto
+	for(i=0;i < tam;i++) //verificar output
+            printf(" %d",output[i]);
+        printf("\n%d\n",tam); //tamanho esta correto
+	printf("\n");
+        if(lvl < 0 || lvl > tam)
+            lvl = tam - 3; 
+	ruido(output,lvl);
+        for(i=0;i < tam;i++) //verificar output
+            printf(" %d",output[i]);
+        printf("\n%d\n",tam); // tamanho esta correto
 	//modifica a codificacao manualmente para testar
 	int vt[64] = {1,1,1,0,1,1,1,1,1,0,0,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,0,0,1,1,0,1,0,1,1,1,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,1,1,1};
 	//for(
 	decoder(output);//OK!
-	printf("\n");
-	decoder(vt);
+	printf("\nInput:\n");
+	//decoder(vt);
+	for(i=0;i < tam/2 - 2;i++) //verificar output
+            printf("%d ",input[i]);
+        printf("\n%d\n",tam /2 - 2); // tamanho esta correto
 	//for(i = 0; i < tam;i++)
 	//	printf("%d ", input[i]);
 	//for(i = 0; i < 8;i+=2){
 	//	printf("%d %d \n", tbl->valEmit[i],tbl->valEmit[i+1]);
 	//	printf("%d %d \n", tbl->valProx[i],tbl->valProx[i+1]);
 	//}
-	
+        free(input);
+	free(output);
 	return 0;
 	
 	
