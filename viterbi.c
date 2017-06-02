@@ -622,6 +622,7 @@ void decoder(int *output){
 int main(int argc, char* argv[]){
 
 	int i = 0;
+          tam = 0;
 	int *output = NULL;
 	//printf("fwfjjrh");
 	//genTableValues();
@@ -635,11 +636,15 @@ int main(int argc, char* argv[]){
 		scanf("%d", &input[i++]);
 	}
 	output = encoder();
-	
+        printf("\n");
+	//for(i=0;i < tam;i++) verificar output
+        //    printf(" %d",output[i]);
+        //printf("\n%d\n",tam); tamanho esta correto
 	//modifica a codificacao manualmente para testar
 	int vt[64] = {1,1,1,0,1,1,1,1,1,0,0,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,0,0,1,1,0,1,0,1,1,1,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,1,1,1};
 	//for(
-	//decoder(output);
+	decoder(output);//OK!
+	printf("\n");
 	decoder(vt);
 	//for(i = 0; i < tam;i++)
 	//	printf("%d ", input[i]);
