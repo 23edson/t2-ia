@@ -31,6 +31,7 @@ Por último a comparação é feita bit-a-bit com a entrada original e o valor o
 da função de decodificação.
 
 **1.Função de codificação**
+
 A função recebe um vetor de inteiros (int input) prenchido com 0's ou 1's, estes valores representam
 a entrada em binário. 
 O primeiro passo da função é acrescentar dois 0's no final do vetor de entrada, para exercer
@@ -43,23 +44,25 @@ tabela de emissões e próximos estados. Para a implementação, o estado inicia
 No fim, a função devolve um vetor de inteiros (int output) com os valores codificados.
 
 **2.Função de ruído**
+
 A função recebe um vetor de inteiros (int output) que representa uma entrada codificada.
 
 
 **3.Função de decodificação**
+
 A função recebe um vetor de inteiros (int output) que representa uma entrada codificada com ruído.
 A construção dos estados de decodificação é considerada como metade da entrada codificada.
 
 Estrutura dos estados:
 
-struct decoder_t : Representa um estado da lista de decodificação. Ela contém 6 atributos, nomeados
+ struct decoder_t : Representa um estado da lista de decodificação. Ela contém 6 atributos, nomeados
 da seguinte maneira:
-  init : estado inicial (decimal)
-  ent : entrada ( 0 ou 1)
-  emit : valor emitido (em decimal)
-  recv : valor recebido (decimal)
-  last : estado de transição (decimal)
-  erro : Diferença entre emit e recv (decimal)
+  init : estado inicial (decimal);
+  ent : entrada ( 0 ou 1);
+  emit : valor emitido (em decimal);
+  recv : valor recebido (decimal);
+  last : estado de transição (decimal);
+  erro : Diferença entre emit e recv (decimal).
 
    
 struct table_t: Contém dois atributos, o primeiro deles é um vetor de struct decoder_t. O segundo é um
@@ -95,6 +98,7 @@ do índice no vetor path o valor emitido, deste modo armazena em uma outra estru
 toda a variável tbb, obtem-se o valor decodificado. Este é retornado como resultado da função.
 
 **4.Resultado**
+
 A partir da função de decodificação, é obtido o vetor resultante. Então é comparado bit-a-bit com a entrada original
 para averiguar se o ruído de fato pode ser contornado pelo processo anterior. A rigor, só é possível obter a entrada
 original novamente se o ruído for relativamente baixo, ou seja, se apenas alguns bits foram alterados.
