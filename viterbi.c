@@ -656,7 +656,7 @@ void copyData(int *dest, int *source){
 }
 
 /**
- * @function ruido
+ * @function compara
  * 
  * @param int saida - Recebe um vetor de inteiros
  *  
@@ -761,7 +761,8 @@ int main(int argc, char* argv[]){
 		
 		
 		//memcpy(cpy,output,tam);
-		copyData(cpy,output);
+		cpy = (int*) malloc(sizeof(int)*tam);
+                copyData(cpy,output);
 		//
 		//printData(cpy);
 		lvl = test[i];
@@ -782,7 +783,7 @@ int main(int argc, char* argv[]){
 		compara(original);		
 		//debugEncoder();		
 		printf("\n");
-		
+		free(cpy);
 	}
 	if(ativo == 1){
 		//imprime apenas o ultimo 		
