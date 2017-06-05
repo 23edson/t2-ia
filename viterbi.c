@@ -627,6 +627,33 @@ void copyData(int *dest, int *source){
 	}
 
 }
+void compara( int *saida){
+	
+	int i,j=0;
+	int limit = tam/2-2;
+	int *v;
+	v = (int *)malloc(sizeof(int)*tam/2-2);
+	for(i = 0; i < limit;i++){
+		if(input[i]!=saida[i]){
+			v[j++] = i;		
+		
+		}
+	
+	}
+	if(j == 0){
+		printf("Nenhum Erro. A sequencia esta integra\n");	
+	
+	}
+	else{
+		printf("Bits diferentes: ");
+		for(i = 0; i < j;i++){
+			printf("%d ", v[i]);
+		}
+		printf(", Erro de: %.2f%% \n", (j*100.0)/(tam/2-2));	
+	
+	}
+
+}
 //Função principal
 int main(int argc, char* argv[]){
 
@@ -693,7 +720,10 @@ int main(int argc, char* argv[]){
 		copyData(cpy,output);
 		//
 		//printData(cpy);
-		ruido(cpy,test[i]);
+		lvl = test[i];
+		if(lvl < 0 || lvl > tam)lvl = tam - 3; 
+		ruido(cpy,lvl);
+		
 		//for(j = 0; j < tam;j+=2)printf("%d%d ", cpy[j],cpy[j+1]);
 		
 		//printf("\n");
@@ -701,9 +731,10 @@ int main(int argc, char* argv[]){
 		//free(cpy);
 		printf("Saida:    ");
 		printData(original);
-		printf("\n");		
+		
+		compara(original);		
 		//debugEncoder();		
-	
+		printf("\n");
 	}
         free(input);
 	free(output);
