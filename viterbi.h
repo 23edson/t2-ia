@@ -9,7 +9,7 @@
 * 	 Alunos : Edson Lemes da Silva & Lucas Cezar Parnoff
 *  
 *   Compilação pelo arquivo Makefile
-*   ou gcc viterbi.c viterbi.h -o m && ./m < data.in
+*   ou gcc viterbi.c viterbi.h -o m && ./m
 *   
 *  O trabalho consiste em fazer codificação e decodificação de
 *  uma sequência de bits dado como entrada. A codificação é feita
@@ -25,12 +25,14 @@
 
 #include<stdio.h>
 #include<stdlib.h>
+#include<time.h>
 #include<string.h>
 
-
+#define MAXNOISE 10
 int tam;
 int *input;
 
+//Representa um estado da tabela de decodificação
 typedef struct dc{
 
 	int init;
@@ -42,10 +44,10 @@ typedef struct dc{
 
 }decoder_t;
 
+//Representa a tabela de estados da decodificação 
 typedef struct tbl{
 
 	int atv[4];	
 	decoder_t **dec;
-	int qtd;
 
-}tab_t;
+}table_t;	
