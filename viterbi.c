@@ -24,33 +24,17 @@
 
 #include "viterbi.h"
 
-//table_t *tbl = NULL;
-//considera o indice para os valores de 0 a 3
-//cada valor possui duas posições consecutivas para 0 e 1.
-// no vetor:
-//		00 :v [0] v[1]
-//    01 : v[2] v[3]
-//    10 : v[4] v[5]
-//    11 : v[6] v[7]
-//int *v = (int[8]){00,11,11,00,10,01,01,10}; //val emitido
-//int *v2 = (int[8]){00,10,00,10,01,11,01,11};	//val proximo
-
 
 //transições
 int v[8] = {0,3,3,0,2,1,1,2}; //Valores emitidos 
 int v2[8] = {0,2,0,2,1,3,1,3}; //Próximo estado
+int qtdNoise;
 
-tab_t *tbb = NULL;
-int maxSize;
+table_t *tbb = NULL;
+
 int *output;
-
-int encoderChoice(int i){
-	if(!i){
-		return 0; 	
-	}else return 1;
-
-}
-
+int *noise;
+int test[MAXNOISE];
 /**
  * @function encoder
  *
@@ -61,10 +45,11 @@ int encoderChoice(int i){
  * com as definições na tabela de transição; isto levando em conta também
  * que é adicionado dois pares de zeros's no final, para permitir que seja
  * usado a influência de todos os bits da entrada.	   	 
- * Este processo ocorre levando em conta que o estado inicial é o 00. 
+ * Este processo ocorre levando em conta que o estado inicial é o 00.
  *
+ * O valor é colocado no variável global int *output
  **/ 
-int *encoder(){
+void encoder(){
 
 	int i,j,esc;
 	
@@ -148,8 +133,6 @@ int *encoder(){
 	}
 	tam = tam*2;
 	
-	return output;
-
 }
 
 /**
@@ -165,12 +148,12 @@ int *encoder(){
  * 
  **/ 
 decoder_t  *fillData(int state, int val){
-//	puts("dmmjmj");
+
 	decoder_t *new = (decoder_t *)malloc(sizeof(decoder_t));
-	//printf("%d %d\n", state,val);
 	
 	int valFn;
 	int valEmit;
+	
 	if(state == 0){
 		valFn = v2[0+val];	
 		valEmit = v[0+val];
@@ -211,19 +194,15 @@ void fillMatrix(){
 	int i,j;
 	int st = 0;
 	
-	//printf("T:%d\n", tam/2);
-	//puts("oigeerg");
-	for(i = 0; i < (tam/2);i++){//puts("12");
+	
+	for(i = 0; i < (tam/2);i++){
 		st = 0;
 		for(j = 0; j < 8;j++){
 			
 			if(j>0 && j%2==0)st+=1;
-			//puts("popop");
 			tbb[i].dec[j] = fillData(st,j%2);
-		//	printf("%d %d %d  %d\n", tbb[i].dec[j]->init,tbb[i].dec[j]->ent,tbb[i].dec[j]->emit,tbb[i].dec[j]->last);
-		//	puts("th");
 		}
-	//	printf("\n");
+
 	}
 
 }
@@ -239,7 +218,6 @@ void initStructs(){
 	int i,j;
 	for(i = 0;i < (tam/2);i++){
 		tbb[i].dec = (decoder_t **)malloc(sizeof(decoder_t)*8);	
-		tbb[i].qtd = 0;
 		for(j = 0; j < 4;j++)
 			tbb[i].atv[j] =0;
 	}
@@ -260,7 +238,7 @@ void initStructs(){
  * 
  **/ 
 int getState(int *vet,int pos){
-	//printf("%d %d ", pos,vet[pos+1]);
+	
 	if(!vet[pos] && !vet[pos+1]){
 		return 0;
 	}
@@ -308,7 +286,7 @@ int getDiffError(int a, int b){
  * A função devolve o índice desse valor.
  * 
  **/ 
-int count(tab_t *tl, int state){
+int count(table_t *tl, int state){
 
 	int i,idx;
 	int menor = 999;
@@ -333,7 +311,7 @@ int count(tab_t *tl, int state){
  * É retornado os valores dos estados finais do estado anterior.
  * 
  **/ 
-int *ativa(int state,tab_t *tl){
+int *ativa(int state,table_t *tl){
 	int *v = (int *)malloc(sizeof(int)*2);
 	if(state == 0){
 		v[0] = tl->dec[0]->last;
@@ -364,8 +342,9 @@ int *ativa(int state,tab_t *tl){
  **/ 
 void debugEncoder(){
 
-	int i;	
-	for(i = 0; i < (tam*2);i+=2){
+	int i;
+	printf("Codificacao sem ruido\n");
+	for(i = 0; i < tam;i+=2){
 		printf("%d%d ", output[i],output[i+1]);	
 	
 	}
@@ -418,7 +397,7 @@ void debugDecoder(){
  * Deste modo, é retornado o índice desse estado.
  * 
  **/ 
-int find(tab_t *tt,int state){
+int find(table_t *tt,int state){
 
 	int i,k;
 	
@@ -432,7 +411,7 @@ int find(tab_t *tt,int state){
 		
 		}
 	}
-
+	return -1;
 }
 
 /**
@@ -465,23 +444,24 @@ int *emitOriginal(int *path){
  * A função analisa o vetor de decodificação de trás para frente,
  * e reconstrói o caminho, colocando no vetor path os índices de
  * cada estado com o menor erro, respeitando as transições indicadas.
- * No final, é retornado um vetor contendo o caminho. 
+ * No final, é retornado um vetor contendo o caminho.
+ * A função devolve o vetor de valores decodificados. 
  * 
  **/ 
-void inversePath(){
+int  *inversePath(){
 
 	int size = tam/2;
 	int i,val;
 	int j = size-1;
 	int atual = 0;
-	//printf("%d", j);
+	
 	int *path = (int *)malloc(sizeof(int)*size);
 	for(i = 0 ;i < 4;i++){
 		val = count(&tbb[size-1],i);	
 		if(tbb[size-1].dec[val]->erro < tbb[size-1].dec[atual]->erro)
 			atual = val;
 	}
-	//printf("%d", atual);
+	
 	size-=2;
 	path[j--] = atual;
 	for(;size >= 0; size--){
@@ -491,13 +471,8 @@ void inversePath(){
 	}
 	
 	int *original = emitOriginal(path);
-	printf("Original\n");
-	for(i = 0; i < (tam/2)-2;i++)
-		printf("%d ", original[i]);
-//	printf("\n");
-	//for(i = 0; i < (tam/2);i++)
-	//	printf("%d ", path[i]);
-  
+	return original;
+
 }
 
 /**
@@ -511,39 +486,32 @@ void inversePath(){
  * considerando que há mais de um estado final, neste caso usa-se o 
  * estado que possui o menor erro entre o conjunto corrente.
  *
- * Aloca um vetor de struct tab_t da metade do tamanho da entrada.
+ * Aloca um vetor de struct table_t da metade do tamanho da entrada.
  * Assim cada posição é um estado da decodificação, ou seja, cada
  * posição contém um vetor de decoder_t com oito posições.
- * O índice 0 de tab_t tbb usa-se apenas 2 índices de decoder_t,
- * índice 1 de tab_T usa 4 índices de decoder_t,
+ * O índice 0 de table_t tbb usa-se apenas 2 índices de decoder_t,
+ * índice 1 de table_t usa 4 índices de decoder_t,
  * os demais usam os oito índices. 
+ * A função retorna um vetor contendo os valores decodificados.
  **/ 
-void decoder(int *output){
+int *decoder(int *output){
 
-	int i,j,k;
-	int flag[4] = {0,0,0,0};
-	//tam = 2;
+	int j,k;
+	
+	
 	int current = 0;
-	tbb = (tab_t *)malloc(sizeof(tab_t)*(tam/2));
+	tbb = (table_t *)malloc(sizeof(table_t)*(tam/2));
+	//Inicializa e preenche as estruturas
 	initStructs();
-//	printf("\nttttt: %d", tam/2);
 	fillMatrix();
 	
-
 	//Inicializa a decodificacao assumindo estado 00
 	for(j = 0; j < 2;j++){
 		tbb[0].dec[j]->recv = getState(output,0);
 		tbb[0].dec[j]->erro = getDiffError(tbb[0].dec[j]->emit,tbb[0].dec[j]->recv); 
 	}	
-	tbb[0].qtd+=2;
 	//marca estado 00 como ativo
 	tbb[0].atv[0]=1;
-	//printf("\n");
-	//for(j =0 ; j < 2;j++){
-	//	printf("%d %d %d %d %d %d \n", tbb[0].dec[j]->init,tbb[0].dec[j]->ent,tbb[0].dec[j]->emit,tbb[0].dec[j]->recv,tbb[0].dec[j]->last,tbb[0].dec[j]->erro);	
-	
-	//}
-	
 	
 	//current++;
 	//marca estado seguinte
@@ -555,45 +523,23 @@ void decoder(int *output){
 		tbb[1].dec[j]->recv = getState(output,2);	
 		tbb[1].dec[j]->erro = tbb[0].dec[1]->erro + getDiffError(tbb[1].dec[j]->emit,tbb[1].dec[j]->recv);
 	}	
+	//Marca os estados 00 e 10 como ativos
 	tbb[1].atv[0] = 1;
 	tbb[1].atv[2] = 1;
-	//current+=2;
-	//printf("\n");
+	
 	//Completa os estados iniciais
 	for(j = 0; j < 8;j++){
 		
 		tbb[2].dec[j]->recv = getState(output,4);
 		int d = find(&tbb[1],tbb[2].dec[j]->init);	
 		tbb[2].dec[j]->erro = tbb[1].dec[d]->erro + getDiffError(tbb[2].dec[j]->emit,tbb[2].dec[j]->recv);
-		//printf("%d %d\n",getDiffError(tbb[2].dec[j]->emit,tbb[2].dec[j]->recv),d);
-	
 	}
-	
-	
-	
+	//Marca os quatro estados como ativos
 	for(k = 0; k < 4;k++)tbb[2].atv[k]=1;
 	current+=3;
 	
-	
-	
-	
-	
-	
 	//Faz as outras transições até completar os estados de decodificação
 	for(j = 6; j < tam;j+=2){
-		/*for(k = 0; k < 4;k++){
-			if(tbb[current-1].atv[k] == 1){
-				int *v=ativa(&tbb[current]);
-				tbb[current].atv[v[0]]= flag[v[0]] =1;
-				tbb[current].atv[v[1]]=flag[v[0]] =1;
-				tbb[current].atv[k] = 1;			
-			}
-			else if(flag[k] == 0){
-					tbb[current].atv[k] = tbb[current-1].atv[k];		
-			}
-		}*/
-		//for(k = 0; k < 4; k++)
-		
 		for(k =0; k < 4;k++){
 			if(tbb[current-1].atv[k] == 1){
 				tbb[current].atv[k] = tbb[current-1].atv[k];
@@ -602,21 +548,16 @@ void decoder(int *output){
 				tbb[current].dec[2*k]->recv = tbb[current].dec[(2*k)+1]->recv = getState(output,j);
 				tbb[current].dec[2*k]->erro = tbb[current-1].dec[minor]->erro+ getDiffError(tbb[current].dec[2*k]->emit,tbb[current].dec[2*k]->recv);
 				tbb[current].dec[(2*k)+1]->erro = tbb[current-1].dec[minor]->erro+ getDiffError(tbb[current].dec[(2*k)+1]->emit,tbb[current].dec[(2*k)+1]->recv);
-					
 			}			
 			
 		}
 	   current++;
-	
 	}
 	
-	debugDecoder();	
-	inversePath();
+	//Obtem o menor caminho inverso
+	int *original = inversePath();
 	
-	
-	//}
-	
-	return;
+	return original;
 }
 
 /**
@@ -635,7 +576,9 @@ void decoder(int *output){
 void ruido(int *alvo,int lvl){
     int i, n;
     time_t t;
+    
     n = (3 + lvl * 2) / 2;
+   // printf("l:%d %d |", lvl,n);
     srand((unsigned) time(&t));
     if(n < 1 || n > tam)
         n = tam - 3;
@@ -647,52 +590,121 @@ void ruido(int *alvo,int lvl){
     return;
 }
 
+void readFile(){
+
+	int i=0;
+	FILE *arq;
+	arq = fopen("data.in","r");
+	
+	fscanf(arq,"%d", &tam);
+	input = (int *)malloc(sizeof(int)*(tam+2));
+	
+	while(i < tam){	
+		fscanf(arq,"%d ", &input[i++]);
+	}
+	i = 0;
+	while(!feof(arq)){
+		//if(feof(arq))break;
+		fscanf(arq,"%d", &test[i++]);
+		qtdNoise++;
+	}
+	//for(i =0 ; i < qtdNoise;i++)printf("%d ", test[i]);
+
+}
+void printData(int *data){
+
+	int i;
+	for(i = 0; i < tam/2 - 2;i++)
+		printf("%d ",data[i]);
+	printf("\n");	
+
+}
+void copyData(int *dest, int *source){
+	int i;
+	for(i = 0; i < tam;i++){
+		dest[i] = source[i];	
+	
+	}
+
+}
 //Função principal
 int main(int argc, char* argv[]){
 
-	int i = 0,lvl;
-          tam = 0;
-	int *output = NULL;
-	//printf("fwfjjrh");
-	//genTableValues();
-	if(argc > 1){
-            lvl = argv[1][0] - '0';
-        }
+	int i = 0,lvl,j;
+   int *cpy;
+	readFile();	
+        
+    // printf("t : %d \n", lvl);
 	//lê tamanho da entrada
-	scanf("%d", &tam);
+	//scanf("%d", &tam);
 	
 	//le entrada
-	input = (int *)malloc(sizeof(int)*(tam+2));
-	while(i < tam){	
-		scanf("%d", &input[i++]);
-	}
-	output = encoder();
-        printf("\n");
-	for(i=0;i < tam;i++) //verificar output
-            printf(" %d",output[i]);
-        printf("\n%d\n",tam); //tamanho esta correto
-	printf("\n");
-        if(lvl < 0 || lvl > tam)
-            lvl = tam - 3; 
-	ruido(output,lvl);
-        for(i=0;i < tam;i++) //verificar output
-            printf(" %d",output[i]);
-        printf("\n%d\n",tam); // tamanho esta correto
+
+	//while(i < tam){	
+	//	scanf("%d", &input[i++]);
+	//}
+	//scanf("%d", &lvl);
+	//if(argc > 1){lvl = argv[1][0] - '0';}
+	encoder();
+	
+    //    printf("\n");
+	//debugEncoder();
+	
+     //   if(lvl < 0 || lvl > tam)
+       //     lvl = tam - 3; 
+  // printf("aq\n");
+//  printf("\n");
+	//ruido(output,lvl);
+      //  for(i=0;i < tam;i++) //verificar output
+       //     printf(" %d",output[i]);
+        //printf("\n%d\n",tam); // tamanho esta correto
+     //   printf("\n");
+   //debugEncoder();
+  // printf("\n");
 	//modifica a codificacao manualmente para testar
-	int vt[64] = {1,1,1,0,1,1,1,1,1,0,0,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,0,0,1,1,0,1,0,1,1,1,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,1,1,1};
+	//int vt[64] = {1,1,1,0,1,1,1,1,1,0,0,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,0,0,1,1,0,1,0,1,1,1,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,1,1,1};
 	//for(
-	decoder(output);//OK!
-	printf("\nInput:\n");
+	//int *original = decoder(output);//OK!
+	//printf("compara");
+	//	for(i=0;i < tam/2 - 2;i++) //verificar output
+  //          printf("%d ",original[i]);
+            
+       // printf("\n%d\n",tam /2 - 2); // tamanho esta correto
+//	printf("\n");
 	//decoder(vt);
-	for(i=0;i < tam/2 - 2;i++) //verificar output
-            printf("%d ",input[i]);
-        printf("\n%d\n",tam /2 - 2); // tamanho esta correto
+//for(i=0;i < tam/2-2;i++) //verificar output
+  //          printf("%d ",input[i]);
+     //   printf("\n%d\n",tam /2 - 2); // tamanho esta correto
 	//for(i = 0; i < tam;i++)
 	//	printf("%d ", input[i]);
 	//for(i = 0; i < 8;i+=2){
 	//	printf("%d %d \n", tbl->valEmit[i],tbl->valEmit[i+1]);
 	//	printf("%d %d \n", tbl->valProx[i],tbl->valProx[i+1]);
 	//}
+	
+	debugEncoder();
+	//printf("%d", qtdNoise);
+	printf("\n\nDecodificao\n");
+	for(i = 0; i < qtdNoise;i++){
+		printf("Teste %d , ruido : %d \n",i+1,test[i]);
+		printf("Original: ");
+		printData(input);
+		//memcpy(cpy,output,tam);
+		copyData(cpy,output);
+		//
+		//printData(cpy);
+		ruido(cpy,test[i]);
+		//for(j = 0; j < tam;j+=2)printf("%d%d ", cpy[j],cpy[j+1]);
+		
+		//printf("\n");
+		int *original = decoder(cpy);
+		//free(cpy);
+		printf("Saida:    ");
+		printData(original);
+		printf("\n");		
+		//debugEncoder();		
+	
+	}
         free(input);
 	free(output);
 	return 0;
