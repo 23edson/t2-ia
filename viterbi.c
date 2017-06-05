@@ -340,12 +340,12 @@ int *ativa(int state,table_t *tl){
  * A função imprime na tela o resultado da codificação.
  * 
  **/ 
-void debugEncoder(){
+void debugEncoder(int *saida){
 
 	int i;
-	printf("Codificacao sem ruido\n");
+
 	for(i = 0; i < tam;i+=2){
-		printf("%d%d ", output[i],output[i+1]);	
+		printf("%d%d ", saida[i],saida[i+1]);	
 	
 	}
 
@@ -590,6 +590,14 @@ void ruido(int *alvo,int lvl){
     return;
 }
 
+/**
+ * @function readFile
+ * 
+ * A função faz a leitura do arquivo 'data.in', onde
+ * encontram-se  os parametros de entrada para o algoritmo.
+ * São três parametros: tamanho da entrada, a entrada 
+ * e alguns inteiros que representam o ruido
+ **/
 void readFile(){
 
 	int i=0;
@@ -611,6 +619,15 @@ void readFile(){
 	//for(i =0 ; i < qtdNoise;i++)printf("%d ", test[i]);
 
 }
+
+/**
+ * @function printData
+ * 
+ * @param int data - Vetor a ser imprimido
+ *
+ * A função imprime o vetor na tela
+ *
+ **/
 void printData(int *data){
 
 	int i;
@@ -619,6 +636,16 @@ void printData(int *data){
 	printf("\n");	
 
 }
+
+/**
+ * @function copyData
+ * 
+ * @param int dest
+ * @param int source
+ *
+ * A função copia os dados de source para dest
+ *
+ **/
 void copyData(int *dest, int *source){
 	int i;
 	for(i = 0; i < tam;i++){
@@ -627,6 +654,17 @@ void copyData(int *dest, int *source){
 	}
 
 }
+
+/**
+ * @function ruido
+ * 
+ * @param int saida - Recebe um vetor de inteiros
+ *  
+ * Verifica os valores com a entrada original, analisando
+ * se as posições são iguais. No final imprime o feedback,
+ * a porcentagem de erro representa apenas a diferença 
+ * de valores nos dois vetores.
+ **/
 void compara( int *saida){
 	
 	int i,j=0;
@@ -641,7 +679,7 @@ void compara( int *saida){
 	
 	}
 	if(j == 0){
-		printf("Nenhum Erro. A sequencia esta integra\n");	
+		printf("Nenhum Erro. A Sequencia Esta Integra\n");	
 	
 	}
 	else{
@@ -659,7 +697,12 @@ int main(int argc, char* argv[]){
 
 	int i = 0,lvl,j;
    int *cpy;
-	readFile();	
+   int ativo;
+	readFile();
+	//if(argc > 1){
+		//ativo = argv[1][0];	
+	
+	//}else/ ativo = 0;	
         
     // printf("t : %d \n", lvl);
 	//lê tamanho da entrada
@@ -671,7 +714,8 @@ int main(int argc, char* argv[]){
 	//	scanf("%d", &input[i++]);
 	//}
 	//scanf("%d", &lvl);
-	//if(argc > 1){lvl = argv[1][0] - '0';}
+	if(argc > 1){ativo = argv[1][0] - '0';}
+	else ativo = 0;
 	encoder();
 	
     //    printf("\n");
@@ -708,14 +752,14 @@ int main(int argc, char* argv[]){
 	//	printf("%d %d \n", tbl->valEmit[i],tbl->valEmit[i+1]);
 	//	printf("%d %d \n", tbl->valProx[i],tbl->valProx[i+1]);
 	//}
-	
-	debugEncoder();
+	printf("Codificacao sem ruido\n");
+	debugEncoder(output);
 	//printf("%d", qtdNoise);
 	printf("\n\nDecodificao\n");
 	for(i = 0; i < qtdNoise;i++){
 		printf("Teste %d , ruido : %d \n",i+1,test[i]);
-		printf("Original: ");
-		printData(input);
+		
+		
 		//memcpy(cpy,output,tam);
 		copyData(cpy,output);
 		//
@@ -723,7 +767,10 @@ int main(int argc, char* argv[]){
 		lvl = test[i];
 		if(lvl < 0 || lvl > tam)lvl = tam - 3; 
 		ruido(cpy,lvl);
-		
+		printf("\nCodificacao com ruido\n");
+		debugEncoder(cpy);
+		printf("\nOriginal: ");
+		printData(input);
 		//for(j = 0; j < tam;j+=2)printf("%d%d ", cpy[j],cpy[j+1]);
 		
 		//printf("\n");
@@ -735,8 +782,14 @@ int main(int argc, char* argv[]){
 		compara(original);		
 		//debugEncoder();		
 		printf("\n");
+		
 	}
-        free(input);
+	if(ativo == 1){
+		//imprime apenas o ultimo 		
+		debugDecoder();	
+	
+	}   
+   free(input);
 	free(output);
 	return 0;
 	
