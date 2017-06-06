@@ -33,7 +33,6 @@ int qtdNoise;
 table_t *tbb = NULL;
 
 int *output;
-int *noise;
 int test[MAXNOISE];
 /**
  * @function encoder
@@ -612,11 +611,9 @@ void readFile(){
 	}
 	i = 0;
 	while(!feof(arq)){
-		//if(feof(arq))break;
 		fscanf(arq,"%d", &test[i++]);
 		qtdNoise++;
 	}
-	//for(i =0 ; i < qtdNoise;i++)printf("%d ", test[i]);
 
 }
 
