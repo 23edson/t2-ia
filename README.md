@@ -45,7 +45,12 @@ No fim, a função devolve um vetor de inteiros (int output) com os valores codi
 
 **2.Função de ruído**
 
-A função recebe um vetor de inteiros (int output) que representa uma entrada codificada.
+A função recebe um vetor de inteiros (int output) que representa uma entrada codificada e 
+um inteiro (int lvl) que indica o nivel de avanço entre os bits.
+Por ser avanço de casas e não porcentagem, pode acontecer de alguns ruidos maiores 
+mesmo sendo numero maior, por isso para minimizar esse problema 
+foi multiplicado o valor aleatorio gerado pelos passos, embora agora pode ser observado 
+muitas igualdades entre passos de numeros consecutivos.
 
 
 **3.Função de decodificação**
