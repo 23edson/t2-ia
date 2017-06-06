@@ -586,6 +586,7 @@ void ruido(int *alvo,int lvl){
         n++;
     for(i = 0 ; i < tam ; i += n ){
         alvo[i] = (alvo[i] + rand() % 100 * n)%2;
+        //alvo[i] = (alvo[i] + rand() % 99 + n)%2;
     };
     return;
 }
