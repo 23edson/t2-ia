@@ -107,10 +107,79 @@ Estão implementados duas funções para debug nesta aplicação, uma para codif
 chamada de 'debugEncoder', ela imprime na tela a codificação da entrada, onde a cada dois bits estão separados por espaços.
 
 A outra chama-se 'debugDecoder', esta função imprime a tabela de estado da decodificação, neste caso são imprimidos na 
-tela todos os estados.
+tela todos os estados (Processo passo a passo da montagem da tabela). Na aplicação ficou definido que apenas o último
+teste é impresso na tela, uma vez que é uma função apenas de 'debug' e visualização do processo da decodificação.
 
-Ambas as funções são chamadas dentro da função main, podendo ser desativadas caso necessário. Porque para entradas
-muito grandes, pode ser que a tela fique bastante poluída.
+Os resultados são exibidos conforme a quantidade de ruído passado como parâmetro. Por exemplo, se tiver quatro ruídos
+passados, então serão realizados quatro testes, um para cada ruído. Para cada teste, é imprimido na tela, a sequência
+original da entrada, seguida pela sequência obtida na decodificação. Se não houve divergências de bits, então é exibido
+a mensagem "Nenhum Erro. Sequencia Esta Integra", porém se houver diferenças, então é impresso as posições onde aconteceu
+a divergência (começando com índice a partir do zero), e também é impresso a porcentagem de bits diferentes, ela
+representa unicamente a diferença bit-a-bit, nada além disso.
+
+**4.1.Exemplos de computações**
+*1.
+Parâmetros de entrada (arquivo data.in):
+5
+1 1 0 1 1
+9
+
+Entrada: 1 1 0 1 1
+
+Codificação sem ruído : 11 01 01 00 01 01 11
+Codificação com ruído : 01 01 01 00 01 01 11
+Saída esperada do decoder: 1 1 0 1 1
+Saída alcançada:           1 1 0 1 1 
+
+*2.
+Parâmetros de entrada (arquivo data.in):
+11
+0 0 0 1 1 1 0 0 1 1 0
+9 0
+
+Entrada: 0 0 0 1 1 1 0 0 1 1 0
+
+Codificação sem ruído    : 00 00 00 11 01 10 01 11 11 01 01 11 00
+Codificação com ruído(9) : 00 00 00 11 01 11 01 11 11 01 01 01 00
+Saída esperada do decoder: 0 0 0 1 1 1 0 0 1 1 0
+Saída alcançada          : 0 0 0 1 1 1 0 0 1 1 0
+
+Codificação com ruído(0) : 01 11 01 10 11 10 01 01 10 00 10 10 10
+Saída esperada do decoder: 0 0 0 1 1 1 0 0 1 1 0 
+Saída alcançada          : 0 1 1 1 1 1 0 1 0 1 0 
+Os bits 1,2,7 e 8 são diferentes entre saída esperada e alcançada ( a partir do índice zero). 36.36% de diferença.
+
+*3.
+Parâmetros de entrada (arquivo data.in):
+30
+1 0 0 1 0 1 0 0 1 1 1 0 0 0 1 1 0 0 1 0 1 1 0 1 1 0 0 0 1 1
+4 3 2 1 0
+
+Entrada : 1 0 0 1 0 1 0 0 1 1 1 0 0 0 1 1 0 0 1 0 1 1 0 1 1 0 0 0 1 1
+
+Codificação sem ruído   : 11 10 11 11 10 00 10 11 11 01 10 01 11 00 11 01 01 11 11 10 00 01 01 00 01 01 11 00 11 01 01 11
+Codificação com ruído(4): 01 10 10 11 10 00 10 10 11 01 10 01 10 00 11 11 01 10 11 10 00 01 01 00 01 01 11 01 11 01 01 11
+Saída esperada do decoder: 1 0 0 1 0 1 0 0 1 1 1 0 0 0 1 1 0 0 1 0 1 1 0 1 1 0 0 0 1 1
+Saída alcançada 	 : 1 0 0 1 0 1 0 0 1 1 1 0 0 0 1 1 0 0 1 0 1 1 0 1 1 0 0 0 1 1 
+
+Codificação com ruído(3): 01 10 10 11 10 00 10 10 11 01 10 01 10 00 11 11 01 10 11 10 00 01 01 00 01 01 11 01 11 01 01 11
+Saída esperada do decoder: 1 0 0 1 0 1 0 0 1 1 1 0 0 0 1 1 0 0 1 0 1 1 0 1 1 0 0 0 1 1
+Saída alcançada 	 : 1 0 0 1 0 1 0 0 1 1 1 0 0 0 1 1 0 0 1 0 1 1 0 1 1 0 0 0 1 1
+
+Codificação com ruído(2): 01 11 11 11 11 00 10 10 11 11 11 01 11 00 11 01 00 11 11 10 00 01 00 00 01 00 11 10 10 01 11 11
+Saída esperada do decoder: 1 0 0 1 0 1 0 0 1 1 1 0 0 0 1 1 0 0 1 0 1 1 0 1 1 0 0 0 1 1
+Saída alcançada		 : 0 1 1 0 0 0 1 0 0 1 1 0 0 0 1 1 0 0 1 0 1 1 1 1 0 1 1 1 1 0
+Os bits 0 1 2 3 5 6 8 22 24 25 26 27 29 são diferentes entre saída esperada e alcançada , 43.33% de diferença.
+
+Codificação com ruído(1): 01 11 11 11 11 00 10 10 11 11 11 01 11 00 11 01 00 11 11 10 00 01 00 00 01 00 11 10 10 01 11 11
+Saída esperada do decoder: 1 0 0 1 0 1 0 0 1 1 1 0 0 0 1 1 0 0 1 0 1 1 0 1 1 0 0 0 1 1
+Saída alcançada		 : 0 1 1 0 0 0 1 0 0 1 1 0 0 0 1 1 0 0 1 0 1 1 1 1 0 1 1 1 1 0
+Os bits 0 1 2 3 5 6 8 22 24 25 26 27 29 são diferentes entre saída esperada e alcançada , 43.33% de diferença.
+
+Codificação com ruído(0): 00 11 10 00 10 01 10 10 10 10 00 10 01 10 01 00 01 11 00 11 10 11 11 00 11 01 10 01 01 00 11 10
+Saída esperada do decoder: 1 0 0 1 0 1 0 0 1 1 1 0 0 0 1 1 0 0 1 0 1 1 0 1 1 0 0 0 1 1
+Saída alcançada		 : 0 1 0 1 0 1 0 1 0 0 0 1 1 1 0 1 1 0 1 1 1 0 0 0 1 1 1 0 0 0
+Os bits 0 1 7 8 9 10 11 12 13 14 16 19 21 23 25 26 28 29 são diferentes entre saída esperada e alcançada , 60.00% de diferença.
 
 **Compilação**
 
@@ -118,11 +187,25 @@ Para compilar é necessário digitar na linha de comando "make" no terminal.
 
 Compilado e executado no LINUX.
 
-O arquivo Makefile se encarrega de iniciar a execução do arquivo compilado.
 Alternativamente, para remover o executável gerado basta digitar no terminal: make clean.
 
 
 **Execução**
 
+A aplicação lê os dados de entrada do arquivo 'data.in' que precisa estar no mesmo diretório do executável. O programa
+recebe 3 conjuntos de números inteiros como parâmetros. No arquivo de texto 'data.in', o primeiro número inteiro representa
+o tamanho da entrada, os próximos inteiros são os valores que representam os bits, ou seja, 0 e/ou 1 ( A quantidade descrita
+pelo primeiro parâmetro). E a última sequência de inteiros representam os ruídos que serão aplicados sobre a codificação. Este
+não possui quantidade definida, pode ter vários elementos ou nem um. A função de leitura se encarrega de contar este último 
+parâmetro. Entretanto, é definido uma quantidade máxima de ruídos, descrito pela constante MAXNOISE no arquivo 
+viter.h; por default este valor ficou inicializado como 20.
 
+Para facilitar a visualização do funcionamento da função de decodificação, a aplicação permite imprimir na tela a execução
+passo a passo do processo de decodificação, para isso basta passar como parâmetro na linha de comando o valor '1', por 
+default este valor esta definido como 0, ou seja, inativo. Contudo, já que esta função é apenas para visualização, é 
+impresso na tela apenas o teste para o último ruído passado no arquivo de entrada.
+
+Exemplo de execução:
+	./main
+	./main 1  
 	
