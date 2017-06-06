@@ -28,7 +28,7 @@
 #include<time.h>
 #include<string.h>
 
-#define MAXNOISE 10
+#define MAXNOISE 20
 int tam;
 int *input;
 

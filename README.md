@@ -123,6 +123,7 @@ a divergência (começando com índice a partir do zero), e também é impresso 
 representa unicamente a diferença bit-a-bit, nada além disso.
 
 **4.1.Exemplos de computações**
+
 *1.
 Parâmetros de entrada (arquivo data.in):
 5
@@ -194,6 +195,7 @@ Compilado e executado no LINUX.
 
 Alternativamente, para remover o executável gerado basta digitar no terminal: make clean.
 
+O arquivo executável gerado pela compilação chama-se "main".
 
 **Execução**
 

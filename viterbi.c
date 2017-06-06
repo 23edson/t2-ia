@@ -697,94 +697,42 @@ int main(int argc, char* argv[]){
    int *cpy;
    int ativo;
 	readFile();
-	//if(argc > 1){
-		//ativo = argv[1][0];	
 	
-	//}else/ ativo = 0;	
-        
-    // printf("t : %d \n", lvl);
-	//lê tamanho da entrada
-	//scanf("%d", &tam);
-	
-	//le entrada
-
-	//while(i < tam){	
-	//	scanf("%d", &input[i++]);
-	//}
-	//scanf("%d", &lvl);
 	if(argc > 1){ativo = argv[1][0] - '0';}
 	else ativo = 0;
 	encoder();
 	
-    //    printf("\n");
-	//debugEncoder();
-	
-     //   if(lvl < 0 || lvl > tam)
-       //     lvl = tam - 3; 
-  // printf("aq\n");
-//  printf("\n");
-	//ruido(output,lvl);
-      //  for(i=0;i < tam;i++) //verificar output
-       //     printf(" %d",output[i]);
-        //printf("\n%d\n",tam); // tamanho esta correto
-     //   printf("\n");
-   //debugEncoder();
-  // printf("\n");
-	//modifica a codificacao manualmente para testar
-	//int vt[64] = {1,1,1,0,1,1,1,1,1,0,0,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,0,0,1,1,0,1,0,1,1,1,1,0,1,0,0,0,0,1,0,1,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,1,1,1};
-	//for(
-	//int *original = decoder(output);//OK!
-	//printf("compara");
-	//	for(i=0;i < tam/2 - 2;i++) //verificar output
-  //          printf("%d ",original[i]);
-            
-       // printf("\n%d\n",tam /2 - 2); // tamanho esta correto
-//	printf("\n");
-	//decoder(vt);
-//for(i=0;i < tam/2-2;i++) //verificar output
-  //          printf("%d ",input[i]);
-     //   printf("\n%d\n",tam /2 - 2); // tamanho esta correto
-	//for(i = 0; i < tam;i++)
-	//	printf("%d ", input[i]);
-	//for(i = 0; i < 8;i+=2){
-	//	printf("%d %d \n", tbl->valEmit[i],tbl->valEmit[i+1]);
-	//	printf("%d %d \n", tbl->valProx[i],tbl->valProx[i+1]);
-	//}
-	printf("Codificacao sem ruido\n");
+   printf("Codificacao sem ruido\n");
 	debugEncoder(output);
-	//printf("%d", qtdNoise);
+	
 	printf("\n\nDecodificao\n");
 	for(i = 0; i < qtdNoise;i++){
 		printf("Teste %d , ruido : %d \n",i+1,test[i]);
-		
-		
 		//memcpy(cpy,output,tam);
 		cpy = (int*) malloc(sizeof(int)*tam);
-                copyData(cpy,output);
-		//
-		//printData(cpy);
+      copyData(cpy,output);
+		
 		lvl = test[i];
 		if(lvl < 0 || lvl > tam)lvl = tam - 3; 
 		ruido(cpy,lvl);
+		
 		printf("\nCodificacao com ruido\n");
 		debugEncoder(cpy);
 		printf("\nOriginal: ");
 		printData(input);
-		//for(j = 0; j < tam;j+=2)printf("%d%d ", cpy[j],cpy[j+1]);
 		
-		//printf("\n");
 		int *original = decoder(cpy);
-		//free(cpy);
+		
 		printf("Saida:    ");
 		printData(original);
 		
 		compara(original);		
-		//debugEncoder();		
+				
 		printf("\n");
 		free(cpy);
 	}
 	if(ativo == 1){
-		//imprime apenas o ultimo 		
+		//imprime apenas o ultimo para debug		
 		debugDecoder();	
 	
 	}   
