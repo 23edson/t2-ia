@@ -46,11 +46,19 @@ No fim, a função devolve um vetor de inteiros (int output) com os valores codi
 **2.Função de ruído**
 
 A função recebe um vetor de inteiros (int output) que representa uma entrada codificada e 
-um inteiro (int lvl) que indica o nivel de avanço entre os bits.
-Por ser avanço de casas e não porcentagem, pode acontecer de alguns ruidos maiores 
+um inteiro (int lvl) que indica o nível de avanço(passo) entre os bits. Este nível de avanço
+possui um intervalo de 0 a 9, caso a função receba um valor acima ou abaixo destes
+limites, a função é modificada para alterar o mínimo de 2bits da entrada codificada.
+
+Os intervalos aqui definidos correspondem do maior para o menor, isto é, nível zero
+representa um passo muito pequeno, e consequentemente uma maior modificação dos bits. E
+em contra partida, um nível maior representa um passo muito longo, e por consequência
+uma menor modificação dos bits. 
+
+Por ser avanço de casas e não porcentagem, pode acontecer de alguns ruídos maiores 
 mesmo sendo numero maior, por isso para minimizar esse problema 
-foi multiplicado o valor aleatorio gerado pelos passos, embora agora pode ser observado 
-muitas igualdades entre passos de numeros consecutivos.
+foi multiplicado o valor aleatório gerado pelos passos, embora agora pode ser observado 
+muitas igualdades entre passos de números consecutivos.
 
 
 **3.Função de decodificação**
@@ -92,7 +100,8 @@ tbb são preenchidas.
 Como os estados e os error são tratados como inteiro, a função que verifica a diferença de bits é feita através de 
 uma operação Xor bit-a-bit com alguns controles para retornar a diferença útil para a aplicação.
 
-Após a construção da tabela de estados de decodificação, é chamado uma função que procura o caminho de menor erro.
+Após a construção da tabela de estados de decodificação, é chamado uma função que procura o caminho de menor erro(Seleciona um
+se possui erros iguais).
 Começando pela última posição da variável tbb, é procurado a posição do vetor dec que possui o menor erro, assim é
 verificado no estado anterior indicado pelo estado dec->init, pegando novamente o menor erro ( desta vez locamente no
 estado indicado por dec->init) e constrói o caminho guardando a posição de cada estado em um vetor auxiliar ( int path). Este
@@ -205,7 +214,8 @@ o tamanho da entrada, os próximos inteiros são os valores que representam os b
 pelo primeiro parâmetro). E a última sequência de inteiros representam os ruídos que serão aplicados sobre a codificação. Este
 não possui quantidade definida, pode ter vários elementos ou nem um. A função de leitura se encarrega de contar este último 
 parâmetro. Entretanto, é definido uma quantidade máxima de ruídos, descrito pela constante MAXNOISE no arquivo 
-viter.h; por default este valor ficou inicializado como 20.
+"viterbi.h"; por default este valor ficou inicializado como 20.
+
 
 Para facilitar a visualização do funcionamento da função de decodificação, a aplicação permite imprimir na tela a execução
 passo a passo do processo de decodificação, para isso basta passar como parâmetro na linha de comando o valor '1', por 
